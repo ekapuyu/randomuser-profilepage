@@ -1,0 +1,319 @@
+<!--
+README / 
+Name : Eka Putri Yuniarsih
+Apply position : PT. Javan Cipta Solusi - Programmer Front End
+>
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile — RandomUser Demo</title>
+  <meta name="description" content="Profile page that fetches a random user from randomuser.me API" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1: #f6f9ff;
+      --card: #ffffff;
+      --muted:#6b7280;
+      --accent1: #7c3aed;
+      --accent2: #06b6d4;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 20px rgba(18,38,63,0.08);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 400px at 10% 10%, rgba(124,58,237,0.08), transparent 8%),
+                  radial-gradient(900px 300px at 90% 90%, rgba(6,182,212,0.06), transparent 8%),
+                  linear-gradient(180deg,var(--bg1), #f7fbff);
+      display:flex;align-items:center;justify-content:center;padding:32px;
+      color:#0f172a;
+    }
+    .container{
+      width:100%;max-width:980px;
+      display:grid;grid-template-columns: 340px 1fr;gap:24px;
+      align-items:start;
+    }
+    @media (max-width:880px){
+      .container{grid-template-columns:1fr;}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9));
+      border-radius:18px;padding:22px;box-shadow:var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+    .profile-hero{
+      display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding:28px;
+      border-radius:14px;position:relative;overflow:hidden;
+    }
+    .avatar{
+      width:140px;height:140px;border-radius:50%;overflow:hidden;border:6px solid rgba(255,255,255,0.85);box-shadow:0 10px 30px rgba(15,23,42,0.12);
+      display:inline-block;background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    h1{margin:0;font-size:20px;font-weight:700}
+    p.role{margin:0;color:var(--muted);font-size:14px}
+    .meta{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+    .chip{background:rgba(15,23,42,0.04);padding:8px 12px;border-radius:999px;font-size:13px}
+    .actions{display:flex;gap:8px;margin-top:12px}
+    button{border:0;padding:10px 14px;border-radius:10px;background:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+    button.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white;font-weight:600}
+
+    /* right column */
+    .details{padding:22px;display:flex;flex-direction:column;gap:18px}
+    .row{display:flex;gap:12px;align-items:center}
+    .label{width:120px;color:var(--muted);font-size:13px}
+    .value{flex:1;font-weight:600}
+
+    .card .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .loader{height:6px;background:linear-gradient(90deg, rgba(124,58,237,0.15), rgba(6,182,212,0.15));border-radius:999px;overflow:hidden}
+    .skeleton{background:linear-gradient(90deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));height:12px;border-radius:6px}
+
+    .stats{display:flex;gap:12px}
+    .stat{flex:1;background:rgba(15,23,42,0.03);padding:12px;border-radius:12px;text-align:center}
+    .stat h3{margin:0;font-size:18px}
+    .stat p{margin:6px 0 0;color:var(--muted)}
+
+    footer.note{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
+
+    /* small controls */
+    .top-controls{display:flex;gap:8px;justify-content:flex-end}
+    .small{padding:8px 10px;border-radius:8px;font-size:13px}
+
+    .error{color:#b91c1c;background:rgba(249,115,22,0.06);padding:10px;border-radius:8px}
+
+    /* micro-interactions */
+    .refresh-rot{animation:spin 1s linear}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card profile-hero" id="leftCard">
+      <div class="top-controls" style="width:100%;">
+        <div style="flex:1;text-align:left;">
+          <small style="color:var(--muted);">Random User Profile</small>
+        </div>
+        <div>
+          <button id="btnRefresh" title="Fetch new user" class="small">🔁 Refresh</button>
+          <button id="btnShare" title="Copy profile link" class="small">🔗 Share</button>
+        </div>
+      </div>
+
+      <div id="heroContent">
+        <div class="avatar" id="avatar">
+          <!-- image injected -->
+        </div>
+        <div>
+          <h1 id="name">—</h1>
+          <p class="role" id="role">Loading…</p>
+        </div>
+
+        <div class="meta" id="meta">
+          <div class="chip" id="ageChip">—</div>
+          <div class="chip" id="countryChip">—</div>
+          <div class="chip" id="natChip">—</div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="btnContact">📨 Contact</button>
+          <button id="btnDownload">⬇️ vCard</button>
+        </div>
+      </div>
+
+      <div style="width:100%;margin-top:16px;">
+        <div class="loader" style="margin-bottom:8px;">
+          <div id="loadBar" style="width:0%;height:6px;background:linear-gradient(90deg,var(--accent1),var(--accent2));border-radius:999px;transition:width 400ms"></div>
+        </div>
+        <div id="errorBox" style="display:none" class="error"></div>
+        <footer class="note">Data from <a href="https://randomuser.me/" target="_blank" rel="noopener noreferrer">randomuser.me</a> • Built for internship test</footer>
+      </div>
+    </div>
+
+    <div class="card details" id="rightCard">
+      <div>
+        <div class="section-title"><strong>Personal</strong><small style="color:var(--muted);">General info</small></div>
+        <div class="row"><div class="label">Full name</div><div class="value" id="fullName">—</div></div>
+        <div class="row"><div class="label">Username</div><div class="value" id="username">—</div></div>
+        <div class="row"><div class="label">Gender</div><div class="value" id="gender">—</div></div>
+        <div class="row"><div class="label">Age</div><div class="value" id="age">—</div></div>
+      </div>
+
+      <div>
+        <div class="section-title"><strong>Contact</strong><small style="color:var(--muted);">Reach out</small></div>
+        <div class="row"><div class="label">Email</div><div class="value" id="email">—</div></div>
+        <div class="row"><div class="label">Phone</div><div class="value" id="phone">—</div></div>
+        <div class="row"><div class="label">Cell</div><div class="value" id="cell">—</div></div>
+      </div>
+
+      <div>
+        <div class="section-title"><strong>Location</strong><small style="color:var(--muted);">Where they live</small></div>
+        <div class="row"><div class="label">Street</div><div class="value" id="street">—</div></div>
+        <div class="row"><div class="label">City / State</div><div class="value" id="cityState">—</div></div>
+        <div class="row"><div class="label">Postcode</div><div class="value" id="postcode">—</div></div>
+        <div class="row"><div class="label">Timezone</div><div class="value" id="timezone">—</div></div>
+      </div>
+
+      <div>
+        <div class="section-title"><strong>Login & ID</strong><small style="color:var(--muted);">Identifiers</small></div>
+        <div class="row"><div class="label">UUID</div><div class="value" id="uuid">—</div></div>
+        <div class="row"><div class="label">Registered</div><div class="value" id="registered">—</div></div>
+      </div>
+
+      <div>
+        <div class="section-title"><strong>Stats</strong><small style="color:var(--muted);">Random fun numbers</small></div>
+        <div class="stats">
+          <div class="stat"><h3 id="score1">—</h3><p>Reputation</p></div>
+          <div class="stat"><h3 id="score2">—</h3><p>Projects</p></div>
+          <div class="stat"><h3 id="score3">—</h3><p>Followers</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const api = 'https://randomuser.me/api/?inc=name,location,email,login,registered,dob,phone,cell,picture,nat,gender&noinfo';
+    const elements = {
+      name: document.getElementById('name'),
+      role: document.getElementById('role'),
+      avatar: document.getElementById('avatar'),
+      ageChip: document.getElementById('ageChip'),
+      countryChip: document.getElementById('countryChip'),
+      natChip: document.getElementById('natChip'),
+      fullName: document.getElementById('fullName'),
+      username: document.getElementById('username'),
+      gender: document.getElementById('gender'),
+      age: document.getElementById('age'),
+      email: document.getElementById('email'),
+      phone: document.getElementById('phone'),
+      cell: document.getElementById('cell'),
+      street: document.getElementById('street'),
+      cityState: document.getElementById('cityState'),
+      postcode: document.getElementById('postcode'),
+      timezone: document.getElementById('timezone'),
+      uuid: document.getElementById('uuid'),
+      registered: document.getElementById('registered'),
+      loadBar: document.getElementById('loadBar'),
+      errorBox: document.getElementById('errorBox'),
+      score1: document.getElementById('score1'),
+      score2: document.getElementById('score2'),
+      score3: document.getElementById('score3'),
+      btnRefresh: document.getElementById('btnRefresh'),
+      btnShare: document.getElementById('btnShare'),
+      btnDownload: document.getElementById('btnDownload'),
+      btnContact: document.getElementById('btnContact'),
+    };
+
+    function setLoading(pct){ elements.loadBar.style.width = pct + '%'; }
+
+    async function fetchUser(){
+      try{
+        elements.errorBox.style.display='none';
+        setLoading(10);
+        const r = await fetch(api);
+        setLoading(40);
+        if(!r.ok) throw new Error('Network response not ok');
+        const data = await r.json();
+        setLoading(70);
+        const u = data.results[0];
+        renderUser(u);
+        setLoading(100);
+        setTimeout(()=>setLoading(0),400);
+      }catch(err){
+        console.error(err);
+        elements.errorBox.style.display='block';
+        elements.errorBox.textContent = 'Failed to load user — ' + err.message;
+        setLoading(0);
+      }
+    }
+
+    function renderUser(u){
+      const full = `${capitalize(u.name.title)} ${capitalize(u.name.first)} ${capitalize(u.name.last)}`;
+      elements.name.textContent = full;
+      elements.role.textContent = `${capitalize(u.gender)} • ${u.nat}`;
+      elements.avatar.innerHTML = `<img alt="${full}" src="${u.picture.large}">`;
+      elements.ageChip.textContent = u.dob.age + ' yrs';
+      elements.countryChip.textContent = u.location.country || u.nat || '—';
+      elements.natChip.textContent = u.nat;
+
+      elements.fullName.textContent = full;
+      elements.username.textContent = u.login.username;
+      elements.gender.textContent = capitalize(u.gender);
+      elements.age.textContent = u.dob.age + ' years';
+
+      elements.email.innerHTML = `<a href="mailto:${u.email}">${u.email}</a>`;
+      elements.phone.innerHTML = `<a href="tel:${u.phone}">${u.phone}</a>`;
+      elements.cell.innerHTML = `<a href="tel:${u.cell}">${u.cell}</a>`;
+
+      const street = `${u.location.street.number} ${u.location.street.name}`;
+      elements.street.textContent = street;
+      elements.cityState.textContent = `${u.location.city}, ${u.location.state}`;
+      elements.postcode.textContent = u.location.postcode;
+      elements.timezone.textContent = u.location.timezone.description || u.location.timezone.offset;
+
+      elements.uuid.textContent = u.login.uuid;
+      elements.registered.textContent = new Date(u.registered.date).toLocaleDateString();
+
+      // random stats for visual
+      elements.score1.textContent = Math.floor(Math.random()*900)+100;
+      elements.score2.textContent = Math.floor(Math.random()*40)+1;
+      elements.score3.textContent = Math.floor(Math.random()*6000)+20;
+
+      // contact button action
+      elements.btnContact.onclick = ()=>{ window.location.href = `mailto:${u.email}?subject=Hello%20${encodeURIComponent(u.name.first)}` };
+
+      // vCard data
+      elements.btnDownload.onclick = ()=>{ downloadVCard(u); };
+
+      elements.btnShare.onclick = ()=>{ copyToClipboard(`https://randomuser.me/`) };
+    }
+
+    function capitalize(s){ if(!s) return s; return s.charAt(0).toUpperCase()+s.slice(1); }
+
+    function copyToClipboard(text){ navigator.clipboard?.writeText(text).then(()=> alert('Link copied to clipboard'), ()=> alert('Copy failed')) }
+
+    function downloadVCard(u){
+      const fn = `${u.name.first} ${u.name.last}`;
+      const lines = [];
+      lines.push('BEGIN:VCARD');
+      lines.push('VERSION:3.0');
+      lines.push(`FN:${fn}`);
+      lines.push(`N:${u.name.last};${u.name.first};;;`);
+      lines.push(`EMAIL;TYPE=INTERNET:${u.email}`);
+      lines.push(`TEL;TYPE=CELL:${u.cell}`);
+      if(u.location){
+        const ad = `${u.location.street.number} ${u.location.street.name};${u.location.city};${u.location.state};${u.location.postcode};${u.location.country}`;
+        lines.push(`ADR;TYPE=HOME:;;${ad}`);
+      }
+      lines.push('END:VCARD');
+      const blob = new Blob([lines.join('\r\n')], {type:'text/vcard'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fn.replace(/\s+/g,'_') + '.vcf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    // wire buttons
+    elements.btnRefresh.addEventListener('click', async function(){
+      this.classList.add('refresh-rot');
+      await fetchUser();
+      setTimeout(()=>this.classList.remove('refresh-rot'),600);
+    });
+
+    // initial
+    fetchUser();
+
+    // accessibility: keyboard shortcut R to refresh
+    window.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='r') elements.btnRefresh.click(); });
+  </script>
+</body>
+</html>
